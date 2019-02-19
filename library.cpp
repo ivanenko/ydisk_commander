@@ -341,7 +341,7 @@ int DCPCALL FsExecuteFileW(HWND MainWin, WCHAR* RemoteName, WCHAR* Verb)
                 }
 
                 if(strings.size()==2){
-                    WCHAR* p = (WCHAR*)u"/trash";
+                    WCHAR* p = (WCHAR*)u"/.Trash";
                     memcpy(RemoteName, p, sizeof(WCHAR) * 7);
                     return FS_EXEC_SYMLINK;
                 }
