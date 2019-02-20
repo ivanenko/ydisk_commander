@@ -23,6 +23,6 @@ License along with this library; if not, write to the Free Software
 
 #include <string>
 
-void show_plugin_properties_dlg(void *hMainWnd, std::string config_path);
+void show_plugin_properties_dlg(void *hMainWnd, std::string config_path, tExtensionStartupInfo *pExtension);
 
 #endif //YDISK_COMMANDER_GTK_DIALOGS_H

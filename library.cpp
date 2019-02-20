@@ -25,6 +25,7 @@ License along with this library; if not, write to the Free Software
 
 #include "library.h"
 #include "wfxplugin.h"
+#include "extension.h"
 #include "restclient.h"
 #include "plugin_utils.h"
 #include "dialogs.h"
@@ -35,6 +36,8 @@ tProgressProcW gProgressProcW = NULL;
 tLogProcW gLogProcW = NULL;
 tRequestProcW gRequestProcW = NULL;
 tCryptProcW gCryptProcW = NULL;
+
+tExtensionStartupInfo *gExtensionStartupInfo = NULL;
 
 std::string oauth_token, config_file_path;
 
@@ -355,7 +358,7 @@ int DCPCALL FsExecuteFileW(HWND MainWin, WCHAR* RemoteName, WCHAR* Verb)
             if(wRemoteName == (WCHAR*) u"/"){ // show disk properties
                 //wcharstring disk_info = prepare_disk_info(rest_client.get_disk_info());
                 //gRequestProcW(gPluginNumber, RT_MsgOK, (WCHAR*)u"Disk properties", (WCHAR*) disk_info.data(), NULL, 0);
-                show_plugin_properties_dlg(MainWin, config_file_path);
+                show_plugin_properties_dlg(MainWin, config_file_path, gExtensionStartupInfo);
             }
         }
     } catch (std::runtime_error & e){
@@ -364,8 +367,13 @@ int DCPCALL FsExecuteFileW(HWND MainWin, WCHAR* RemoteName, WCHAR* Verb)
     }
 
     return FS_EXEC_OK;
-
 }
+
+void DCPCALL ExtensionInitialize(tExtensionStartupInfo* StartupInfo)
+{
+    gExtensionStartupInfo = StartupInfo;
+}
+
 
 
 

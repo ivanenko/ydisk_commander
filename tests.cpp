@@ -180,9 +180,6 @@ int main(void){
     //gtk_container_add(GTK_CONTAINER(GtkWidget(MainWin)),gFix);
     //gtk_widget_show(gFix);
 
-    std::basic_string<WCHAR> sw1 = (WCHAR*)u"/.Trash/sss";
-    std::basic_string<WCHAR> o1 = sw1.substr(7);
-
 
     return 0;
 }
