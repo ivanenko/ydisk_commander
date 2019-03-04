@@ -31,22 +31,26 @@ License along with this library; if not, write to the Free Software
 #include "dialogs.h"
 
 
+#define _plugin_name "Yandex Disk"
+
 int gPluginNumber, gCryptoNr;
 tProgressProcW gProgressProcW = NULL;
 tLogProcW gLogProcW = NULL;
 tRequestProcW gRequestProcW = NULL;
 tCryptProcW gCryptProcW = NULL;
 
-tExtensionStartupInfo *gExtensionStartupInfo = NULL;
+tExtensionStartupInfo gExtensionStartupInfo;
 
 std::string oauth_token, config_file_path;
+
+thread_local BOOL gIsFolderRemoving = false;
 
 YdiskRestClient rest_client;
 
 
-void DCPCALL FsGetDefRootName(char* DefRootName,int maxlen)
+void DCPCALL FsGetDefRootName(char* DefRootName, int maxlen)
 {
-    strncpy(DefRootName, "Yandex Disk", maxlen);
+    strncpy(DefRootName, _plugin_name, maxlen);
 }
 
 void DCPCALL FsSetCryptCallbackW(tCryptProcW pCryptProcW, int CryptoNr, int Flags)
@@ -74,6 +78,9 @@ int DCPCALL FsInitW(int PluginNr, tProgressProcW pProgressProc, tLogProcW pLogPr
 
 HANDLE DCPCALL FsFindFirstW(WCHAR* Path, WIN32_FIND_DATAW *FindData)
 {
+    if(gIsFolderRemoving)
+        return (HANDLE)-1;
+
     memset(FindData, 0, sizeof(WIN32_FIND_DATAW));
 
     wcharstring wPath(Path);
@@ -131,11 +138,6 @@ int DCPCALL FsFindClose(HANDLE Hdl){
     }
 
     return 0;
-}
-
-BOOL DCPCALL FsMkDir(char* Path){
-    int i;
-    return false;
 }
 
 BOOL DCPCALL FsMkDirW(WCHAR* Path)
@@ -358,7 +360,7 @@ int DCPCALL FsExecuteFileW(HWND MainWin, WCHAR* RemoteName, WCHAR* Verb)
             if(wRemoteName == (WCHAR*) u"/"){ // show disk properties
                 //wcharstring disk_info = prepare_disk_info(rest_client.get_disk_info());
                 //gRequestProcW(gPluginNumber, RT_MsgOK, (WCHAR*)u"Disk properties", (WCHAR*) disk_info.data(), NULL, 0);
-                show_plugin_properties_dlg(MainWin, config_file_path, gExtensionStartupInfo);
+                show_plugin_properties_dlg(MainWin, config_file_path, &gExtensionStartupInfo);
             }
         }
     } catch (std::runtime_error & e){
@@ -369,9 +371,19 @@ int DCPCALL FsExecuteFileW(HWND MainWin, WCHAR* RemoteName, WCHAR* Verb)
     return FS_EXEC_OK;
 }
 
+void DCPCALL FsStatusInfoW(WCHAR* RemoteDir, int InfoStartEnd, int InfoOperation)
+{
+    if(InfoOperation == FS_STATUS_OP_DELETE || InfoOperation == FS_STATUS_OP_RENMOV_MULTI){
+        if(InfoStartEnd == FS_STATUS_START)
+            gIsFolderRemoving = true;
+        else
+            gIsFolderRemoving = false;
+    }
+}
+
 void DCPCALL ExtensionInitialize(tExtensionStartupInfo* StartupInfo)
 {
-    gExtensionStartupInfo = StartupInfo;
+    memcpy(&gExtensionStartupInfo, StartupInfo, sizeof(tExtensionStartupInfo));
 }
 
 
