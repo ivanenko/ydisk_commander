@@ -28,22 +28,41 @@ using namespace json11;
 void _listen_server(httplib::Server* svr,  std::promise<std::string> *pr){
 
     svr->Get("/get_token", [pr](const httplib::Request& req, httplib::Response& res) {
-        std::string code = req.get_param_value("code");
+        std::string html = R"(
+            <html><body>
+                <h2 id="message">Success</h2>
+                <script type="text/javascript">
+                    var hash = window.location.hash.substr(1);
+                    var i = hash.search("access_token=");
+                    if(i<0){
+                        document.getElementById("message").textContent = "Error! Cannot get auth_token";
+                    } else {
+                        var token = hash.substr(i)
+                                        .split("&")[0]
+                                        .split("=")[1];
 
-        httplib::SSLClient cli("oauth.yandex.ru");
-        httplib::Params params{
-                { "grant_type", "authorization_code" },
-                { "code", code },
-                { "client_id", "bc2f272cc37349b7a1320b9ac7826ebf"},
-                { "client_secret", "bb4b160bca0a4581a5e44e79a1adf42a"}
-        };
+                        if(token){
+                            var xhttp = new XMLHttpRequest();
+                            xhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                 document.getElementById("message").textContent = "Success! You can close browser and use DC plugin";
+                                }
+                             };
+                            xhttp.open("GET", "/receive_token?access_token="+token, true);
+                            xhttp.send();
+                        }
+                    }
+                </script>
+            </body></html>
+        )";
 
-        auto r = cli.Post("/token", params);
+        res.set_content(html, "text/html");
+    });
 
-        std::string error;
-        const auto json = Json::parse(r->body, error);
+    svr->Get("/receive_token", [pr](const httplib::Request& req, httplib::Response& res) {
+        std::string token = req.get_param_value("access_token");
         res.set_content("OAuth token received", "text/plain");
-        pr->set_value(json["access_token"].string_value());
+        pr->set_value(token);
     });
 
     //int port = svr->bind_to_any_port("localhost");
@@ -64,7 +83,7 @@ std::string get_yandex_oauth_token()
     std::thread server_thread(_listen_server, &server, &promiseToken);
 
     //TODO add win32 browser open
-    system("xdg-open https://oauth.yandex.ru/authorize?client_id=bc2f272cc37349b7a1320b9ac7826ebf\\&response_type=code");
+    system("xdg-open https://oauth.yandex.ru/authorize?client_id=bc2f272cc37349b7a1320b9ac7826ebf\\&response_type=token");
 
     try{
         std::future_status ftr_status = ftr.wait_for(std::chrono::seconds(20));

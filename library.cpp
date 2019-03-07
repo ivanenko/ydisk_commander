@@ -297,14 +297,14 @@ int _download_file(wcharstring remoteName, wcharstring url, wcharstring filename
     try{
         wcharstring fname;
         if(filename.empty()) {
-            // extract filename from url
-            std::string::size_type p = url.find_last_of((WCHAR)u'/');
-            if(p == std::string::npos)
-                return FS_EXEC_ERROR;
+                // extract filename from url
+                std::string::size_type p = url.find_last_of((WCHAR)u'/');
+                if(p == std::string::npos)
+                    return FS_EXEC_ERROR;
 
-            fname = remoteName + url.substr(p+1);
+                fname = remoteName + url.substr(p+1);
         } else {
-            fname = remoteName += filename;
+            fname = remoteName + filename;
         }
 
         rest_client.saveFromUrl(toUTF8(url.c_str()), toUTF8(fname.c_str()));
