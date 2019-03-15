@@ -171,10 +171,14 @@ int main(void){
     int p = sw.find_last_of((WCHAR)u'/');
     std::basic_string<WCHAR> o = sw.substr(0, p+1);
 
-    json11::Json my_json = json11::Json::object { {"key1", "value1"}, {"key2", "value2"} };
-    json11::Json::object json_obj = my_json.object_items();
-    json_obj["key1"] = "ololo";
-    std::string ddd = json11::Json(json_obj).dump();
+    std::string sww = "http://ololo.ru/bla/bla/photo.jpg";
+    int p2 = sww.find_last_of('/');
+    std::string o5 = sww.substr(p2, std::string::npos);
+
+//    json11::Json my_json = json11::Json::object { {"key1", "value1"}, {"key2", "value2"} };
+//    json11::Json::object json_obj = my_json.object_items();
+//    json_obj["key1"] = "ololo";
+//    std::string ddd = json11::Json(json_obj).dump();
 
     //gFix=gtk_vbox_new(true,5);
     //gtk_container_add(GTK_CONTAINER(GtkWidget(MainWin)),gFix);

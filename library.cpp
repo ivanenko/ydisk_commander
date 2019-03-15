@@ -181,7 +181,7 @@ BOOL DCPCALL FsRemoveDirW(WCHAR* RemoteName)
         return true;
     } catch (std::runtime_error & e){
         gRequestProcW(gPluginNumber, RT_MsgOK, (WCHAR*)u"Error", (WCHAR*) fromUTF8(e.what()).c_str(), NULL, 0);
-        return false;
+        return true;
     }
 }
 
